@@ -41,10 +41,10 @@ The initial hypothesis was that the frequency difference between genuine and cou
 -   **Genuine Sample (`Data/true/true_01.jpg`):** An image of the original, printed QR code.
 -   **Counterfeit Sample (`Data/false/false_01.jpg`):** An image of the same QR code after being photocopied using the same printer.
 
-![Genuine Printed QR](Data/true/true_01.jpg)
+![Genuine Printed QR](true/true_01.jpg)
 *Fig 1. A genuine QR code printed directly.*
 
-![Counterfeit Copied QR](Data/false/false_01.jpg)
+![Counterfeit Copied QR](false/false_01.jpg)
 *Fig 2. A counterfeit QR code created by photocopying the genuine version.*
 
 However, this method did not yield satisfactory results, as the variations in lighting, scan angle, and noise made it difficult to establish a reliable classification baseline.
