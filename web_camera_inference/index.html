@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>TrueQR Verifier — EcoQCode</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body class="safe">
+  <!-- Top bar -->
+  <div class="top-bar">
+    <img src="ecoqcode.jpg" alt="EcoQCode Logo" class="logo" />
+  </div>
+
+  <!-- Camera container -->
+  <div class="container" id="camera-card" aria-label="QR Camera Scanner">
+    <video id="video" autoplay muted playsinline></video>
+    <canvas id="canvas"></canvas>
+
+    <!-- ✅ 인식 가이드: 점선 사각형 '하나만' -->
+    <div class="guide" aria-hidden="true" title="Align QR inside this box"></div>
+
+    <!-- Controls (버튼만, 동작은 app.js에서 연결) -->
+    <div class="controls">
+      <button class="btn" id="toggleTorch" type="button" aria-pressed="false" title="Toggle torch">Torch</button>
+      <button class="btn" id="switchCam" type="button" title="Switch camera">Flip</button>
+    </div>
+
+    <!-- Status banner -->
+    <div id="banner" class="detect-banner">Align the QR inside the dotted square</div>
+
+    <!-- Subtle eco leaf watermark -->
+    <svg class="eco-leaf" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M5 21c8 0 14-6 14-14V5h-2C9 5 3 11 3 19v2h2z"></path>
+    </svg>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+
+</html>

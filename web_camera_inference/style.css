@@ -1,0 +1,211 @@
+/* ========== EcoQCode Mobile Styles ========== */
+:root {
+  /* eco palette */
+  --leaf-1: 16 185 129;   /* emerald 500 */
+  --leaf-2: 34 197 94;    /* green 500 */
+  --leaf-dk: 21 128 61;   /* green 700 */
+
+  /* surfaces / text */
+  --bg: 248 250 252;      /* slate-50 */
+  --bg-2: 255 255 255;    /* white */
+  --fg: 15 23 42;         /* slate-900 */
+  --muted: 100 116 139;   /* slate-500 */
+  --edge: 226 232 240;    /* slate-200 */
+
+  /* shape & shadow */
+  --radius-xl: 18px;
+  --radius-2xl: 24px;
+  --pad-1: 10px;
+  --shadow-1: 0 10px 24px rgba(0,0,0,.08);
+  --shadow-2: 0 18px 46px rgba(0,0,0,.18);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: 2 6 23;
+    --bg-2: 15 23 42;
+    --fg: 241 245 249;
+    --muted: 148 163 184;
+    --edge: 30 41 59;
+    --shadow-1: 0 10px 24px rgba(0,0,0,.35);
+    --shadow-2: 0 18px 44px rgba(0,0,0,.5);
+  }
+}
+
+/* Reset-ish */
+*,
+*::before,
+*::after { box-sizing: border-box; }
+html, body { height: 100%; }
+
+body.safe {
+  margin: 0;
+  font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  color: rgb(var(--fg));
+  background: rgb(var(--bg));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100dvh;
+  /* safe area */
+  padding:
+    max(env(safe-area-inset-top), 0px)
+    max(env(safe-area-inset-right), 0px)
+    max(env(safe-area-inset-bottom), 0px)
+    max(env(safe-area-inset-left), 0px);
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Top bar */
+.top-bar {
+  width: 100%;
+  background: linear-gradient(90deg, rgba(var(--leaf-2), .18), rgba(var(--leaf-1), .18));
+  backdrop-filter: blur(8px) saturate(140%);
+  padding: var(--pad-1) 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-bottom: 1px solid rgba(var(--edge), .9);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+.logo {
+  height: 36px;
+  width: auto;
+  border-radius: 8px;
+  filter: drop-shadow(0 1px 0 rgba(0,0,0,.12));
+}
+
+/* Camera container */
+.container {
+  position: relative;
+  width: 100%;
+  max-width: 720px;
+  flex: 1 1 auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 10px;
+  border: 1px solid rgba(var(--leaf-1), .25);
+  border-radius: var(--radius-2xl);
+  overflow: hidden;
+  background: rgb(var(--bg-2));
+  box-shadow: var(--shadow-1);
+  min-height: clamp(380px, 65vh, 760px);
+  isolation: isolate;
+}
+
+/* Video & Canvas */
+video,
+canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain; /* 필요시 cover로 변경 가능 */
+  transform: translateZ(0);
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+}
+
+/* Gentle overlay for readability on bright feeds */
+.container::after {
+  content: "";
+  position: absolute; inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(120% 80% at 50% 0%, rgba(46, 204, 113,.08), transparent 45%),
+    linear-gradient(to bottom, rgba(0,0,0,.16), transparent 35%);
+}
+
+/* ✅ Single dotted guide (the ONLY visual frame) */
+.guide {
+  position: absolute;
+  /* JS에서 크롭과 동일한 70% 정사각형 위치로 맞춰 사용하려면
+     app.js에서 left/top/width/height를 동기화하거나,
+     아래처럼 CSS만으로도 가운데 70%를 표시할 수 있음 */
+  inset: 0;
+  margin: auto;
+  width: 70vmin;           /* 뷰포트 기준 정사각형 */
+  height: 70vmin;
+  max-width: 70%;
+  max-height: 70%;
+  border: 2px dashed rgba(var(--leaf-1), .95);
+  border-radius: 16px;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.35);
+  pointer-events: none;
+}
+
+/* Controls */
+.controls {
+  position: absolute;
+  top: clamp(12px, 5vh, 18px);
+  right: clamp(12px, 6vw, 18px);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 30;
+}
+.btn {
+  appearance: none;
+  border: 0;
+  cursor: pointer;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: rgba(255,255,255,.86);
+  color: rgb(var(--fg));
+  font-weight: 700;
+  font-size: 13px;
+  line-height: 1;
+  box-shadow: var(--shadow-1);
+  border: 1px solid rgba(0,0,0,.06);
+}
+@media (prefers-color-scheme: dark) {
+  .btn { background: rgba(30,41,59,.8); color: rgb(241 245 249); border-color: rgba(255,255,255,.12); }
+}
+
+/* Status banner */
+.detect-banner {
+  position: absolute;
+  left: 50%;
+  bottom: clamp(12px, 4.5vh, 24px);
+  transform: translateX(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 18px;
+  border-radius: 999px;
+  font-weight: 800;
+  text-align: center;
+  line-height: 1.1;
+  letter-spacing: .2px;
+  font-size: clamp(1rem, 4.2vw, 1.3rem);
+  color: white;
+  background: linear-gradient(90deg, rgba(var(--leaf-1), .95), rgba(var(--leaf-2), .9));
+  box-shadow: var(--shadow-2);
+  border: 1px solid rgba(255,255,255,.22);
+  backdrop-filter: blur(6px) saturate(140%);
+  transition: transform .2s ease, background .25s ease;
+}
+.detect-banner.genuine {
+  background: linear-gradient(90deg, rgba(var(--leaf-2), .95), rgba(var(--leaf-1), .9));
+}
+.detect-banner.fake {
+  background: linear-gradient(90deg, rgba(239, 68, 68, .95), rgba(var(--leaf-dk), .9));
+}
+.detect-banner:active { transform: translateX(-50%) scale(.98); }
+
+/* Eco leaf watermark */
+.eco-leaf {
+  position: absolute; right: 14px; bottom: 14px;
+  width: 24px; height: 24px;
+  fill: rgba(16,185,129,.18);
+  pointer-events: none;
+}
+
+/* Motion preference */
+@media (prefers-reduced-motion: reduce) {
+  .detect-banner { transition: none; }
+}

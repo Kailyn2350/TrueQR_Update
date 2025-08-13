@@ -1,0 +1,10 @@
+--- 분류 리포트 ---
+
+              precision    recall  f1-score   support
+
+  False (위조)       0.92      0.91      0.91       148
+   True (정품)       0.91      0.93      0.92       148
+
+    accuracy                           0.92       296
+   macro avg       0.92      0.92      0.92       296
+weighted avg       0.92      0.92      0.92       296
