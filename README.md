@@ -88,16 +88,28 @@ The final classification report confirms the outstanding performance on the vali
 
 Despite the perfect score on the validation set, real-world testing using a web camera revealed several edge cases and areas for improvement. The following analysis is based on images saved in the `result/` directory.
 
--   **Successful Cases:** The model was generally successful at correctly identifying both genuine and counterfeit QR codes under good lighting conditions.
-    -   `KakaoTalk_20250818_140910003_00.jpg`: A genuine QR code, correctly identified as **True**.
-    -   `KakaoTalk_20250818_140910003_02.jpg`: A counterfeit QR code, correctly identified as **False**.
+#### Successful Cases
+The model was generally successful at correctly identifying both genuine and counterfeit QR codes under good lighting conditions.
 
--   **Failure Cases:** However, a number of failure cases were also observed.
-    -   `KakaoTalk_20250818_140910003_01.jpg`: A genuine QR code that was incorrectly identified as **False** (False Negative).
-    -   `KakaoTalk_20250818_140910003_03.jpg`: A counterfeit QR code that was incorrectly identified as **True** (False Positive).
+| Genuine (Correctly Identified as True) | Counterfeit (Correctly Identified as False) |
+| :---: | :---: |
+| ![Genuine Correct](result/KakaoTalk_20250818_140910003_00.jpg) | ![Counterfeit Correct](result/KakaoTalk_20250818_140910003_02.jpg) |
 
--   **Impact of Lighting:** The use of a smartphone's flashlight had a significant positive impact.
-    -   `KakaoTalk_20250818_140910003_04.jpg` & `KakaoTalk_20250818_140910003_05.jpg`: When using a flashlight, the model was able to distinguish between genuine and counterfeit codes without failure, suggesting that consistent, bright lighting is crucial for reliable performance.
+#### Failure Cases
+However, a number of failure cases were also observed, highlighting the challenges of real-world conditions.
+
+| Genuine (Incorrectly Identified as False) | Counterfeit (Incorrectly Identified as True) |
+| :---: | :---: |
+| ![Genuine Incorrect](result/KakaoTalk_20250818_140910003_01.jpg) | ![Counterfeit Incorrect](result/KakaoTalk_20250818_140910003_03.jpg) |
+
+#### Impact of Lighting
+The use of a smartphone's flashlight had a significant positive impact on performance. When the flashlight was active, the model was able to distinguish between genuine and counterfeit codes without failure.
+
+| Genuine (Flash On) | Counterfeit (Flash On) |
+| :---: | :---: |
+| ![Genuine Flash](result/KakaoTalk_20250818_140910003_04.jpg) | ![Counterfeit Flash](result/KakaoTalk_20250818_140910003_05.jpg) |
+
+This suggests that consistent, bright lighting is crucial for reliable performance.
 
 ### Hypothesis for Errors
 
