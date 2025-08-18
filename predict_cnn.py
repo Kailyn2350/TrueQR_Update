@@ -12,7 +12,7 @@ IMG_SIZE = 224
 
 # [수정 필요 2] 불러올 훈련된 모델 파일의 경로입니다.
 # 이전 단계에서 저장한 모델 파일 이름으로 정확하게 지정해주세요.
-MODEL_PATH = os.path.join("results_advanced", "qr_attention_model.keras")
+MODEL_PATH = os.path.join("results_224_diverse_data", "qr_attention_model.keras")
 NUM_EXAMPLES_TO_SHOW = 10
 
 
@@ -103,7 +103,7 @@ def main():
             print(f"이미지를 처리할 수 없습니다: {image_path}")
 
     plt.tight_layout()
-    result_path = "results_advanced/prediction_results.png"
+    result_path = "results_224_diverse_data/prediction_results.png"
     plt.savefig(result_path)
     print(f"예측 결과 이미지가 '{result_path}'에 저장되었습니다.")
 

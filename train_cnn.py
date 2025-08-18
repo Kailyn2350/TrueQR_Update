@@ -23,7 +23,7 @@ from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau
 IMG_SIZE = 224
 BATCH_SIZE = 16
 EPOCHS = 50
-RESULTS_DIR = "results_advanced"
+RESULTS_DIR = "results_224_diverse_data"
 
 
 # --- 데이터 로딩 함수 (이전과 동일) ---

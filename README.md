@@ -119,6 +119,50 @@ Based on this analysis, the primary reasons for the model's errors in real-world
 
 ---
 
+## Iteration 2: Improving Robustness with Diverse Data
+
+### Problem: Classifying Blank Backgrounds as "True"
+
+A key issue identified during testing was that the model would often classify empty or non-QR code backgrounds as "True". This highlighted a significant gap in the model's training: it had learned to differentiate between genuine and counterfeit QR codes but had not been taught what constitutes "not a QR code".
+
+### Solution: Enriching the Dataset
+
+To address this, the dataset was improved in two ways:
+1.  **Negative Sampling:** A new set of "negative" images was programmatically generated and added to the `False` category. These included blank images and images with random noise, teaching the model to associate these patterns with a "False" prediction.
+2.  **Enhanced Augmentation:** The data augmentation pipeline was upgraded to include random blurring and perspective transforms, better simulating real-world variations in angle, focus, and distance.
+
+The model was then retrained on this new, more diverse dataset. The results are stored in the `results_224_diverse_data/` directory.
+
+### Real-World Inference Analysis (iPhone 13 Pro)
+
+Subsequent real-world testing with an iPhone 13 Pro showed a marked improvement in the model's robustness.
+
+#### Standard Lighting
+
+Under standard lighting conditions, the model now correctly identifies both True and False cases with high accuracy.
+
+| Genuine (Correctly Identified as True) | Counterfeit (Correctly Identified as False) |
+| :---: | :---: |
+| ![Genuine Correct](result_224/KakaoTalk_20250818_151123535_01.jpg) | ![False Correct](result_224/KakaoTalk_20250818_151123535_00.jpg) |
+
+#### Flashlight Enabled
+
+Testing with the flashlight revealed strong performance, though not perfect.
+- **Successful Cases:** The model correctly identified both genuine and counterfeit codes in most cases.
+- **Failure Case:** A few instances were observed where a counterfeit QR code was misclassified as "True".
+
+| Genuine (Correctly Identified as True) | Counterfeit (Correctly Identified as False) | Counterfeit (Incorrectly Identified as True) |
+| :---: | :---: | :---: |
+| ![Genuine Flash Correct](result_224/KakaoTalk_20250818_151123535_02.jpg) | ![False Flash Correct](result_224/KakaoTalk_20250818_151123535_03.jpg) | ![False Flash Incorrect](result_224/KakaoTalk_20250818_151123535_04.jpg) |
+
+### Final Analysis
+
+The addition of diverse negative samples and more robust data augmentation significantly improved the model's reliability, especially in correctly identifying non-QR patterns as "False".
+
+While occasional errors can still occur (particularly with challenging lighting), the overall performance is much more stable. It is believed that implementing a time-based averaging system—where the application performs inference for 5-10 seconds and averages the prediction scores—would be sufficient to create a highly reliable verification system for practical use.
+
+---
+
 ## Conclusion
 
 This project successfully demonstrates that a CNN-based approach can effectively distinguish between genuine and counterfeit QR codes by analyzing embedded Moiré patterns. The key factor for achieving high accuracy was increasing the input image resolution from 64x64 to **224x224**, which preserved the necessary high-frequency details for the model to learn from.

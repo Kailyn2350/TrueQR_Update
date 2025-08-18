@@ -26,11 +26,11 @@ def load_new_model():
         # 한마디로 C:\Users\seoks\Desktop\Util\TrueQR_Update\web_camera_inference\app.py 를 abspath로 가져오고 C:\Users\seoks\Desktop\Util\TrueQR_Update\web_camera_inference 를 dirname을 통해서 script_dir에 저장
         project_root = os.path.dirname(
             script_dir
-        )  # C:\Users\seoks\Desktop\Util\TrueQR_Update로 한번더 이동 루트 폴더 위치로 이동해서 모델이 들어있는 results_advanced를 찾기 위해서
+        )  # C:\Users\seoks\Desktop\Util\TrueQR_Update로 한번더 이동 루트 폴더 위치로 이동해서 모델이 들어있는 results_224_diverse_data를 찾기 위해서
         # Updated model path
         model_path = (
             os.path.join(  # os.path.join은 경로를 아키텍처에 맞게 합쳐주는 함수
-                project_root, "results_advanced", "qr_attention_model.keras"
+                project_root, "results_224_diverse_data", "qr_attention_model.keras"
             )
         )
 
