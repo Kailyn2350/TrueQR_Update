@@ -8,27 +8,97 @@ This repository contains the scripts for data preparation, model training, and e
 
 ---
 
-## Theoretical Background
+# Theoretical Background
 
-### What is a Moiré Pattern?
+## What is a Moiré Pattern?
 
-A Moiré pattern is a large-scale interference pattern that is produced when two or more similar but slightly offset periodic patterns are overlaid. The term originates from moire, a type of textile with a rippled, "watered" appearance. In physics, it's a classic example of aliasing that occurs due to undersampling a high-frequency signal.
+A **moiré pattern** is a *low-frequency* interference pattern that appears when two regular, fine patterns (grids, stripes, dot screens) with slightly different spatial frequencies, orientations, or phases are overlaid. In sampled imaging systems (scanners, cameras, displays), moiré is a visible consequence of **aliasing**—high-frequency content that exceeds the sensor’s sampling capability gets misrepresented as a lower, “fake” frequency. ([imatest.com][1], [Wikipedia][2])
 
-### Mathematical Principle
+## Spatial Frequency & Nyquist Limit (Why aliasing happens)
 
-The visual effect of a Moiré pattern can be described by the superposition of two periodic functions. For two sinusoidal gratings with spatial frequencies \$f_1\$ and \$f_2\$ that are nearly parallel, the resulting Moiré pattern will have a beat frequency of:
+* **Spatial frequency**: how rapidly intensity changes over space (e.g., lines per millimeter, cycles per pixel). Fine stripes/dots = **high spatial frequency**.
+* **Sampling**: a scanner or camera measures the scene on a fixed pixel grid. Its sampling frequency $f_s$ sets a hard limit: components above **Nyquist** ($f_s/2$) cannot be recorded faithfully. Those components **fold** into lower frequencies (**aliasing**), often visible as moiré. ([imatest.com][1], [Wikipedia][2])
 
-\$f_{moire} = |f_1 - f_2|\$
+A classic result for two nearly parallel gratings with spatial frequencies $f_1$ and $f_2$ is a beat (moiré) frequency
 
-This new, lower frequency is what we perceive as the Moiré pattern. The shape, orientation, and frequency of the Moiré pattern are highly sensitive to minute changes in the original patterns, including rotation, scaling, and shifts in position.
+$$
+f_{\text{moiré}} = \lvert f_1 - f_2 \rvert,
+$$
 
-### Application in Counterfeit Detection
+with orientation and period highly sensitive to small changes in angle/scale/phase. In sampled imaging, this “second grating” is the **sensor sampling lattice** (or another printed screen), so high-frequency content near or above Nyquist readily produces visible beats. ([ptolemy.eecs.berkeley.edu][3], [opg.optica.org][4])
 
-The printing and copying process acts as a sampling mechanism.
-1.  **Genuine Print:** A high-resolution printer can accurately reproduce the high-frequency pattern embedded in the QR code. When scanned by a designated verifier (which has its own grid pattern), a predictable, "true" Moiré pattern is generated.
-2.  **Counterfeit Copy:** When a genuine QR code is photocopied or scanned and re-printed, the printer/scanner combination cannot perfectly replicate the original high-frequency details. This process introduces sampling errors, aliasing, and slight distortions (scaling/rotation). This altered pattern, when scanned by the verifier, creates a different, "false" Moiré pattern or no clear pattern at all.
+## Printing & Scanning: why halftone screens matter
 
-This project leverages this principle to classify QR codes as genuine or counterfeit.
+Most printing systems render tone with **halftone** dots at a chosen screen frequency (lpi) and angle. When a scanner’s sampling grid interacts with that halftone screen, their frequencies/angles can interfere, creating moiré in the **scanned** image—especially if the scene contains fine, periodic detail. Printers also have finite dot gain and resolution, which alter (blur/shift) high frequencies before the next sampling stage. ([Wikipedia][5], [scantips.com][6], [the-print-guide.blogspot.com][7])
+
+Additionally, every optical/imaging chain has a **Modulation Transfer Function (MTF)** that reduces contrast as spatial frequency increases (high frequencies are transmitted with lower contrast). Near the system’s limiting resolution, tiny changes in frequency/angle move energy across the passband and can amplify or suppress visible moiré after re-sampling. ([edmundoptics.com][8], [normankoren.com][9], [Radiopaedia][10])
+
+---
+
+## Genuine vs. Copied: What actually happens
+
+Below, “embedded micro-pattern” = the deliberate high-frequency stripe/dot texture you add to the QR modules.
+
+### 1) Genuine print (single print → smartphone capture)
+
+1. **Embedding**
+   A high-frequency micro-pattern is embedded in the QR artwork. It may be near (but within) the intended capture device’s usable band so it *survives* printing and is *predictably* sampled by the phone camera.
+2. **Print**
+   A high-resolution printer renders the pattern. Some attenuation occurs (dot gain, MTF roll-off), but most of the intended spectral content remains on paper.
+3. **Capture**
+   The smartphone sensor samples the print. Because it’s a *single* print stage and the phone’s sampling/MTF are known, the captured signal exhibits a **stable, expected response**—either a weak, controlled moiré signature or a characteristic micro-texture that your model can learn.
+   *Key point:* no intermediate scan→reprint aliasing stage has “mangled” the spectrum yet.
+
+### 2) Copied artifact (print → **scan → reprint** → smartphone capture)
+
+1. **First sampling: scanner**
+   The scanner samples the high-frequency micro-pattern through its pixel lattice. Any components above the scanner’s Nyquist fold into **alias (fake) low frequencies**, changing orientation/period unpredictably. Even near-Nyquist content is distorted by aperture shape, lattice geometry, slight rotations, and non-ideal MTF. ([opg.optica.org][4], [lars.purdue.edu][11], [ScienceDirect][12])
+2. **Reconstruction: reprint**
+   The aliased/distorted pattern is then **reprinted**. Printer resolution limits and dot gain further blur/shift energy, often **boosting low-frequency contrast** (the “looks darker/bolder” effect you observed).
+3. **Second sampling: smartphone**
+   The phone now samples a **spectrally altered** print containing alias components and contrast-shifted textures. The result is a **different moiré field** (often darker bands or wavy artifacts) than the genuine case. This change is consistent enough for a classifier to separate genuine vs. counterfeit.
+
+**In short:** a single print preserves your designed high-frequency cue well enough to yield a stable capture; **scan→reprint** introduces aliasing and contrast redistribution that **converts high-frequency content into visible low-frequency moiré**—or at least a markedly different texture—upon final capture. ([imatest.com][1], [scantips.com][6])
+
+---
+
+## Why it may “look darker” after copying
+
+Even if you don’t see a crisp wavy pattern, the copy often **looks denser/darker**. Two reasons:
+
+1. **Aliasing transfers energy to lower frequencies**, where human vision and the phone pipeline preserve more contrast—so the region appears bolder.
+2. **Print/scan MTF + dot gain** attenuate very fine detail but retain more of the coarse components, effectively **raising local average density/contrast**. ([edmundoptics.com][8], [normankoren.com][9])
+
+---
+
+## Practical design guidelines (for embedded micro-patterns)
+
+* **Place the embedded frequency band** near the scanner’s/consumer copier’s vulnerable range (close to their Nyquist), so copying is likely to alias it, while a single high-quality print + phone capture remains stable. ([imatest.com][1])
+* **Exploit angle sensitivity**: small rotations between the micro-pattern and the sampling lattice can strongly change the moiré. Choosing robust orientations for the genuine path (print→phone) and fragile ones for copy paths (print→scan→reprint→phone) increases separability. ([opg.optica.org][4])
+* **Balance visibility**: keep the micro-pattern subtle enough to pass as “solid” to the eye, yet strong enough to survive one print and produce a consistent capture signature.
+* **Account for optics**: phone lenses/sensors differ; pick frequencies that remain discriminative under typical phone MTF (avoid pushing critical content exactly at the limit). ([Radiopaedia][10])
+* **Measure, then train**: log genuine vs. copied spectra and textures from multiple printers/scanners/phones, then set your classifier threshold based on PR curves (operating point tuned to your FP/FN cost).
+
+---
+
+## How this project uses the effect
+
+1. **Embedding**: a high-frequency micro-pattern is added to QR modules.
+2. **Acquisition**: the web app crops and sends camera frames.
+3. **Inference**: a CNN (MobileNetV2 backbone + attention) classifies **genuine** (single print signature) vs. **counterfeit** (alias-altered signature).
+4. **Deployment**: a single decision threshold—estimated from validation PR curves—drives the UI verdict.
+
+---
+
+## References (selected)
+
+* Imatest: *Nyquist frequency, aliasing, and color moiré in cameras* (clear overview for imaging sensors and aliasing). ([imatest.com][1])
+* Nyquist–Shannon sampling theorem (why $f_s/2$ is the hard limit). ([Wikipedia][2])
+* Scantips: *Moiré patterns in scanning* (scanner grid × halftone screen interference). ([scantips.com][6])
+* Optica/JOSA (Steinbach 1982): Fourier analysis of moiré from scanned halftones (frequency, angle, aperture effects). ([opg.optica.org][4])
+* Edmund Optics / Koren: MTF basics (contrast vs. spatial frequency in optics). ([edmundoptics.com][8], [normankoren.com][9])
+* Halftone background (screen frequency/angles in printing). ([Wikipedia][5])
+
 
 ---
 
@@ -171,3 +241,17 @@ While the model achieves 100% accuracy on the test dataset, real-world applicati
 -   **Enriching the Dataset:** Collect a much wider variety of counterfeit samples under different conditions.
 -   **Variable Lighting and Distance:** Specifically train the model on images captured with varying lighting and at different distances to improve its real-world reliability.
 -   **Hyperparameter Tuning:** Further optimize model parameters for even better performance on challenging, real-world data.
+
+
+[1]: https://www.imatest.com/docs/nyquist-aliasing/?utm_source=chatgpt.com "Nyquist frequency, Aliasing, and Color Moire"
+[2]: https://en.wikipedia.org/wiki/Nyquist%E2%80%93Shannon_sampling_theorem?utm_source=chatgpt.com "Nyquist–Shannon sampling theorem"
+[3]: https://ptolemy.eecs.berkeley.edu/eecs20/week13/moire.html?utm_source=chatgpt.com "Aliasing in Images"
+[4]: https://opg.optica.org/abstract.cfm?uri=josa-72-9-1190&utm_source=chatgpt.com "Moiré patterns in scanned halftone pictures"
+[5]: https://en.wikipedia.org/wiki/Halftone?utm_source=chatgpt.com "Halftone"
+[6]: https://www.scantips.com/basics06.html?utm_source=chatgpt.com "Moire patterns"
+[7]: https://the-print-guide.blogspot.com/2009/05/halftone-screen-angles.html?utm_source=chatgpt.com "Halftone screen angles"
+[8]: https://www.edmundoptics.com/knowledge-center/application-notes/optics/introduction-to-modulation-transfer-function/?srsltid=AfmBOopTD7Hh_V2WxArZ-G1_96bCnRRRo1r66YxsOSI8SDdLwXKWu5fM&utm_source=chatgpt.com "Introduction to Modulation Transfer Function"
+[9]: https://www.normankoren.com/Tutorials/MTF.html?utm_source=chatgpt.com "Understanding resolution and MTF"
+[10]: https://radiopaedia.org/articles/modulation-transfer-function?lang=us&utm_source=chatgpt.com "Modulation transfer function | Radiology Reference Article"
+[11]: https://www.lars.purdue.edu/home/references/LTR_111772.pdf?utm_source=chatgpt.com "Moire Patterns And Two-Dimensional Aliasing In Line ..."
+[12]: https://www.sciencedirect.com/science/article/abs/pii/S0262885699000839?utm_source=chatgpt.com "Analysis of moire patterns in non-uniformly sampled ..."
