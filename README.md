@@ -90,7 +90,7 @@ Even if you don’t see a crisp wavy pattern, the copy often **looks denser/dark
 
 ---
 
-## References (selected)
+## References
 
 * Imatest: *Nyquist frequency, aliasing, and color moiré in cameras* (clear overview for imaging sensors and aliasing). ([imatest.com][1])
 * Nyquist–Shannon sampling theorem (why $f_s/2$ is the hard limit). ([Wikipedia][2])
