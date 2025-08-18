@@ -49,7 +49,7 @@ This document explains **why a single genuine print behaves differently from a c
 
 ---
 
-## Visual Intuition (using `sample/output.png`)
+## Visual Intuition (using `output.png`)
 
 ![Aliasing demo](output.png)
 
