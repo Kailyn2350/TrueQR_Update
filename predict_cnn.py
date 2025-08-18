@@ -8,7 +8,7 @@ from tensorflow.keras.models import load_model
 # --- 설정 (Configuration) ---
 # [수정 필요 1] 이 값은 모델을 훈련할 때 사용했던 IMG_SIZE와 반드시 같아야 합니다.
 # 예: 64x64로 훈련했다면 64, 96x96으로 훈련했다면 96으로 변경
-IMG_SIZE = 64
+IMG_SIZE = 224
 
 # [수정 필요 2] 불러올 훈련된 모델 파일의 경로입니다.
 # 이전 단계에서 저장한 모델 파일 이름으로 정확하게 지정해주세요.
@@ -84,7 +84,7 @@ def main():
         if processed_img is not None:
             # 모델로 예측 수행
             prediction_prob = model.predict(processed_img)[0][0]
-            prediction = "True" if prediction_prob > 0.5 else "False"
+            prediction = "True" if prediction_prob > 0.7 else "False"
 
             # 결과 시각화
             original_img = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)

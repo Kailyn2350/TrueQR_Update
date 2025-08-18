@@ -56,10 +56,10 @@ def augment_and_save(source_dir, output_dir, num_augmentations=9):
 
 def main():
     # Augment True images
-    augment_and_save(os.path.join('Data', 'true_split'), os.path.join('Data', 'true_augmented'))
+    augment_and_save(os.path.join('Data', 'True'), os.path.join('Data', 'train_data_true'))
     
     # Augment False images
-    augment_and_save(os.path.join('Data', 'false_split'), os.path.join('Data', 'false_augmented'))
+    augment_and_save(os.path.join('Data', 'False'), os.path.join('Data', 'train_data_false'))
 
     print("\nData augmentation complete.")
 

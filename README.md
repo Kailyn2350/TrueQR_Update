@@ -16,9 +16,9 @@ A Moiré pattern is a large-scale interference pattern that is produced when two
 
 ### Mathematical Principle
 
-The visual effect of a Moiré pattern can be described by the superposition of two periodic functions. For two sinusoidal gratings with spatial frequencies $f_1$ and $f_2$ that are nearly parallel, the resulting Moiré pattern will have a beat frequency of:
+The visual effect of a Moiré pattern can be described by the superposition of two periodic functions. For two sinusoidal gratings with spatial frequencies \$f_1\$ and \$f_2\$ that are nearly parallel, the resulting Moiré pattern will have a beat frequency of:
 
-$f_{moire} = |f_1 - f_2|$
+\$f_{moire} = |f_1 - f_2|\$
 
 This new, lower frequency is what we perceive as the Moiré pattern. The shape, orientation, and frequency of the Moiré pattern are highly sensitive to minute changes in the original patterns, including rotation, scaling, and shifts in position.
 
@@ -36,18 +36,7 @@ This project leverages this principle to classify QR codes as genuine or counter
 
 ### Initial Approach: Fourier Transform
 
-The initial hypothesis was that the frequency difference between genuine and counterfeit Moiré patterns could be detected using a Fourier Transform. By analyzing the frequency spectrum of the scanned images, we aimed to find a clear threshold to distinguish between the two classes.
-
--   **Genuine Sample (`Data/true/true_01.jpg`):** An image of the original, printed QR code.
--   **Counterfeit Sample (`Data/false/false_01.jpg`):** An image of the same QR code after being photocopied using the same printer.
-
-![Genuine Printed QR](true/true_01.jpg)
-*Fig 1. A genuine QR code printed directly.*
-
-![Counterfeit Copied QR](false/false_01.jpg)
-*Fig 2. A counterfeit QR code created by photocopying the genuine version.*
-
-However, this method did not yield satisfactory results, as the variations in lighting, scan angle, and noise made it difficult to establish a reliable classification baseline.
+The initial hypothesis was that the frequency difference between genuine and counterfeit Moiré patterns could be detected using a Fourier Transform. By analyzing the frequency spectrum of the scanned images, we aimed to find a clear threshold to distinguish between the two classes. However, this method did not yield satisfactory results, as the variations in lighting, scan angle, and noise made it difficult to establish a reliable classification baseline.
 
 ### Improved Approach: CNN-based Classification
 
@@ -58,7 +47,7 @@ To overcome the limitations of the Fourier Transform approach, a Convolutional N
 The model is a custom CNN built with TensorFlow/Keras, leveraging transfer learning from `MobileNetV2` and incorporating a `Squeeze-and-Excitation` (SE) block for attention.
 
 The architecture is as follows:
-1.  **Input Layer:** Takes a `(64, 64, 1)` grayscale image.
+1.  **Input Layer:** Takes a `(224, 224, 1)` grayscale image.
 2.  **Initial Convolution:** A `Conv2D` layer expands the single channel to 3 channels to match the input requirements of MobileNetV2.
 3.  **Base Model (MobileNetV2):** A pre-trained MobileNetV2 model (with weights from ImageNet) is used as a feature extractor. The top classification layer is excluded, and its layers are frozen (`trainable=False`).
 4.  **Attention Block:** A `squeeze_excite_block` is added after the base model to allow the network to perform feature recalibration, learning to weight important features more heavily.
@@ -67,53 +56,62 @@ The architecture is as follows:
 
 ---
 
-## Results
+## Results and Analysis
 
-The model was trained on a dataset of augmented genuine and counterfeit QR code images. The following results were achieved on the validation set.
+### Initial Model Performance
 
-### Training History
+An initial model was trained using a small input size of `64x64` pixels. This model struggled to perform reliably, with an accuracy that was not significantly better than random guessing. It became clear that downsizing the images to such a small resolution was discarding the critical, high-frequency details that differentiate genuine and counterfeit patterns.
 
-The training history shows that the model converged well, with both accuracy increasing and loss decreasing steadily for the training and validation sets. The use of `EarlyStopping` and `ReduceLROnPlateau` callbacks helped in finding the optimal weights and preventing overfitting.
+### Improved Model Performance (224x224)
+
+To address the poor performance, the model was retrained using a much higher input resolution of **224x224** pixels. This change proved to be critical and resulted in a dramatic improvement in performance. The model, trained on the augmented dataset, achieved **100% accuracy** on the validation set.
 
 ![Training History](results_advanced/training_history.png)
-*Fig 3. Model accuracy and loss over epochs.*
+*Fig 1. Model accuracy and loss over epochs for the 224x224 model.*
 
-### Classification Report
-
-The classification report provides detailed metrics for the model's performance. The model achieved an overall accuracy of 92%.
+The final classification report confirms the outstanding performance on the validation data:
 
 ```
 --- Classification Report ---
 
               precision    recall  f1-score   support
 
-  False (Counterfeit)       0.92      0.91      0.91       148
-   True (Genuine)           0.91      0.93      0.92       148
+  False (Counterfeit)       1.00      1.00      1.00       120
+     True (Genuine)       1.00      1.00      1.00       124
 
-    accuracy                                       0.92       296
-   macro avg           0.92      0.92      0.92       296
-weighted avg           0.92      0.92      0.92       296
+         accuracy                           1.00       244
+        macro avg       1.00      1.00      1.00       244
+     weighted avg       1.00      1.00      1.00       244
 ```
--   **Precision:** Indicates how many of the items identified as positive were truly positive.
--   **Recall:** Indicates how many of the actual positive items were correctly identified.
--   **F1-Score:** The harmonic mean of precision and recall.
 
-### Confusion Matrix
+### Real-World Inference Analysis
 
-The confusion matrix provides a visual representation of the model's predictions versus the actual labels. It shows a low number of misclassifications for both classes.
+Despite the perfect score on the validation set, real-world testing using a web camera revealed several edge cases and areas for improvement. The following analysis is based on images saved in the `result/` directory.
 
-![Confusion Matrix](results_advanced/confusion_matrix.png)
-*Fig 4. Confusion matrix for the validation set.*
+-   **Successful Cases:** The model was generally successful at correctly identifying both genuine and counterfeit QR codes under good lighting conditions.
+    -   `KakaoTalk_20250818_140910003_00.jpg`: A genuine QR code, correctly identified as **True**.
+    -   `KakaoTalk_20250818_140910003_02.jpg`: A counterfeit QR code, correctly identified as **False**.
 
-### Prediction on Test Data
+-   **Failure Cases:** However, a number of failure cases were also observed.
+    -   `KakaoTalk_20250818_140910003_01.jpg`: A genuine QR code that was incorrectly identified as **False** (False Negative).
+    -   `KakaoTalk_20250818_140910003_03.jpg`: A counterfeit QR code that was incorrectly identified as **True** (False Positive).
 
-Finally, the trained model was tested on a set of unseen images. The results below show the model's predictions (P) against the actual labels (A), with the model's confidence score in parentheses. Red titles indicate incorrect predictions.
+-   **Impact of Lighting:** The use of a smartphone's flashlight had a significant positive impact.
+    -   `KakaoTalk_20250818_140910003_04.jpg` & `KakaoTalk_20250818_140910003_05.jpg`: When using a flashlight, the model was able to distinguish between genuine and counterfeit codes without failure, suggesting that consistent, bright lighting is crucial for reliable performance.
 
-![Prediction Results](results_advanced/prediction_results.png)
-*Fig 5. Sample predictions on test images.*
+### Hypothesis for Errors
+
+Based on this analysis, the primary reasons for the model's errors in real-world scenarios are believed to be:
+1.  **Distance and Resolution:** As the distance between the camera and the QR code increases, the effective resolution of the pattern decreases. This can make the Moiré pattern too faint for the model to detect, often causing it to default to a "True" prediction.
+2.  **Lack of Data Diversity:** The dataset for counterfeit examples was not sufficiently diverse. It did not include a wide variety of real-world scenarios (different lighting, angles, distances, and copy methods). This is likely a major contributor to the error rate.
 
 ---
 
-## Future Work
+## Conclusion
 
-The next planned step is to implement a real-time inference system using a web camera. This will involve creating a web application that can capture video frames, process them through the trained model, and provide an instant verification result to the user. The initial components for this are located in the `web_camera_inference` directory.
+This project successfully demonstrates that a CNN-based approach can effectively distinguish between genuine and counterfeit QR codes by analyzing embedded Moiré patterns. The key factor for achieving high accuracy was increasing the input image resolution from 64x64 to **224x224**, which preserved the necessary high-frequency details for the model to learn from.
+
+While the model achieves 100% accuracy on the test dataset, real-world application reveals that its robustness can be improved. Future work should focus on:
+-   **Enriching the Dataset:** Collect a much wider variety of counterfeit samples under different conditions.
+-   **Variable Lighting and Distance:** Specifically train the model on images captured with varying lighting and at different distances to improve its real-world reliability.
+-   **Hyperparameter Tuning:** Further optimize model parameters for even better performance on challenging, real-world data.

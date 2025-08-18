@@ -20,7 +20,7 @@ from tensorflow.keras.applications import MobileNetV2
 from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau
 
 # --- 설정 (Configuration) ---
-IMG_SIZE = 64
+IMG_SIZE = 224
 BATCH_SIZE = 16
 EPOCHS = 50
 RESULTS_DIR = "results_advanced"
