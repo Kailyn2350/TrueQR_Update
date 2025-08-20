@@ -297,6 +297,31 @@ While the model achieves 100% accuracy on the test dataset, real-world applicati
 -   **Variable Lighting and Distance:** Specifically train the model on images captured with varying lighting and at different distances to improve its real-world reliability.
 -   **Hyperparameter Tuning:** Further optimize model parameters for even better performance on challenging, real-world data.
 
+---
+
+## Sample Images
+
+To provide a clear visual reference, this section shows the difference between an original, authentic QR code ("True") and a counterfeit one that has been reproduced ("False").
+
+When an authentic QR code is printed, it retains the high-frequency moiré pattern, which is essential for verification. When this printed code is copied or scanned and then reprinted, the pattern is altered, which is how counterfeits are detected.
+
+### Authentic "True" Sample
+
+This is an example of a genuine QR code. When printed, it looks like this. The embedded pattern is subtle but detectable by the verification system.
+
+![Authentic QR Code](true/true_01.jpg)
+
+*An example of a genuine QR code (`true/true_01.jpg`)*
+
+### Counterfeit "False" Sample
+
+This is what a counterfeit or copied QR code can look like. Notice the visible distortion and the loss of the original pattern's integrity. This change allows the system to identify it as a non-genuine copy.
+
+![Counterfeit QR Code](false/false_01.jpg)
+
+*An example of a copied QR code (`false/false_01.jpg`)*
+
+---
 
 [1]: https://www.imatest.com/docs/nyquist-aliasing/?utm_source=chatgpt.com "Nyquist frequency, Aliasing, and Color Moire"
 [2]: https://en.wikipedia.org/wiki/Nyquist%E2%80%93Shannon_sampling_theorem?utm_source=chatgpt.com "Nyquist–Shannon sampling theorem"
