@@ -235,7 +235,7 @@ def augment_and_save(
     num_augmentations: int = 4,
     base_seed: int = 42,
     keep_original: bool = True,
-    skip_if_aug_exits: bool = True,  # 그대로 둠(철자 그대로). 필요하면 exists로 바꿔도 됨.
+    skip_if_aug_exists: bool = True,  # 그대로 둠(철자 그대로). 필요하면 exists로 바꿔도 됨.
     cfg: dict = AUG_CONFIG,
 ):
     source_dir = Path(source_dir)
@@ -252,13 +252,17 @@ def augment_and_save(
         print(f"[!] No images in: {source_dir}")
         return
 
-    if skip_if_aug_exits and any("_aug" in f for f in os.listdir(output_dir)):
+    if skip_if_aug_exists and any(
+        "_aug" in f for f in os.listdir(output_dir)
+    ):  # skip_if_aug_exists는 같은게 있을때 스킵할지 여부인데 예를들어 _aug가 이미 있는데 다른 시드라던가 정보를 이용해서 시도해보고 싶을때 이미 데이터가 있어서 덮어쓰기 하고 싶을때 False로 설정
         print(
             f"[i] Found augmented files in {output_dir}.Skipping to avoid duplicates."
         )
         return
 
-    same_io = source_dir.resolve() == output_dir.resolve()
+    same_io = (
+        source_dir.resolve() == output_dir.resolve()
+    )  # Path.resolve()는 절대경로로 바꿔서 .라던가 /라던가.. 상대 요소를 없앰
 
     print(f"[i] Augmenting {len(files)} images from {source_dir} -> {output_dir}")
     for fn in files:
@@ -268,19 +272,27 @@ def augment_and_save(
             print(f"[!] Cannot read: {src_path}")  # [FIX] 오타 수정(readL -> read)
             continue
 
-        stem, ext = os.path.splitext(fn)
-        ext = ext if ext else ".png"
+        stem, ext = os.path.splitext(
+            fn
+        )  # os.path.splitext는 이름과 확장자를 분류하는 부분
+        ext = ext if ext else ".png"  # 만약에 확장자가 없으면 .png를 붙인다
 
-        if keep_original:
-            dst_ori = output_dir / f"{stem}{ext}"
-            if not same_io and not dst_ori.exists():
-                cv2.imwrite(str(dst_ori), img)
+        if keep_original:  # True 라면 증강본 저장과 별개로 원본도 output_dir에 복사
+            dst_ori = output_dir / f"{stem}{ext}"  # 원본을 저장할 목적지 경로
+            if (
+                not same_io and not dst_ori.exists()
+            ):  # 입력 폴더랑 출력 폴더가 동일한지(같으면 이미 원본이 폴더에 있으니까 불필요한 복사 방지) + 목적지에 동일한 파일이 존재하지 않을때
+                cv2.imwrite(str(dst_ori), img)  # 원본 이미지를 출력 폴던에 쓰기
 
-        rng_local = seeded_rng(base_seed, stem)
+        rng_local = seeded_rng(base_seed, stem)  # 객체 생성
 
         for i in range(num_augmentations):
-            np.random.seed(rng_local.randint(0, 1_000_000))
-            random.seed(rng_local.randint(0, 1_000_000))
+            np.random.seed(
+                rng_local.randint(0, 1_000_000)
+            )  # rng_local에서 뽑은 난수를 Numpy 전역시드에 대입
+            random.seed(
+                rng_local.randint(0, 1_000_000)
+            )  # rng_local에서 뽑은 난수를 파이썬 전역시드에 대입
 
             aug = apply_random_transforms(img, cfg, rng_local)
             out_name = f"{stem}_aug{i}{ext.lower()}"
@@ -295,7 +307,9 @@ def augment_and_save(
 
 
 # ----------------- 예시 실행 -------------------
-if __name__ == "__main__":
+if (
+    __name__ == "__main__"
+):  # 이 파일이 “직접 실행된 스크립트”인지, “다른 파일에서 import된 모듈”인지 구분해서, 특정 코드를 실행할지 말지 결정하는 표준 관용구
     # 권장: 원본과 증강본을 분리해서 관리
     # 원본과 같은 폴더를 쓰고 싶다면 아래 두 줄에서 *_aug를 원본 폴더로 바꾸면 됨.
     augment_and_save(
