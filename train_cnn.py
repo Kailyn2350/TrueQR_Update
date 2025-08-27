@@ -9,21 +9,22 @@ import tensorflow as tf
 from tensorflow.keras.models import Model
 from tensorflow.keras.layers import (
     Input,
-    Conv2D,
     GlobalAveragePooling2D,
     Dropout,
     Dense,
     Reshape,
     multiply,
+    Conv2D,
 )
 from tensorflow.keras.applications import MobileNetV2
 from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau
+from tensorflow.keras import layers
 
 # --- 설정 (Configuration) ---
 IMG_SIZE = 224
 BATCH_SIZE = 16
 EPOCHS = 50
-RESULTS_DIR = "results_224_diverse_data"
+RESULTS_DIR = "results_224_diverse_data_update_aug"
 
 
 # --- 데이터 로딩 함수 (이전과 동일) ---
@@ -89,15 +90,13 @@ def squeeze_excite_block(input_tensor):
 
 def main():
     # ... (데이터 로딩 및 모델 구성 부분은 이전과 동일)
-    true_dir = "Data/train_data_true"
-    false_dir = "Data/train_data_false"
-    if not os.path.exists(true_dir) or not os.path.exists(false_dir):
-        print(f"오류: 데이터 폴더를 찾을 수 없습니다.")
-        return
-    images, labels = load_data(true_dir, false_dir, IMG_SIZE)
-    X_train, X_val, y_train, y_val = train_test_split(
-        images, labels, test_size=0.2, random_state=42, stratify=labels
-    )
+    train_true = "Data/True_aug"
+    train_false = "Data/False_aug"
+    val_true = "Data/True/val"  # 검증셋은 보통 증강하지 않음
+    val_false = "Data/False/val"
+
+    X_train, y_train = load_data(train_true, train_false, IMG_SIZE)
+    X_val, y_val = load_data(val_true, val_false, IMG_SIZE)
     inputs = Input(
         shape=(IMG_SIZE, IMG_SIZE, 1)
     )  # keras에서 입력 레이어를 정의하는 부분
